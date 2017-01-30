@@ -78,14 +78,23 @@ def get_augmented(features, labels, idxs):
 
 		img_choice = np.random.choice([0,1,2])
 
-		if img_choice == 1:
-			steering = steering + 0.25
-		elif img_choice == 2:
-			steering = steering - 0.25
-
-
 		img = preprocess(read_img(features[ix][img_choice]))
+
+		steering_angle = 0.25
 		
+		if img_choice == 1:
+			steering = steering + steering_angle
+
+		elif img_choice == 2:
+			steering = steering - steering_angle
+			
+		max_shift = 50
+		shift_dist = 0.004
+
+		steering_shift = (np.random.uniform()*max_shift) - (max_shift/2)
+		M = np.float32([[1,0,steering_shift],[0,1,0]])
+		img = cv2.warpAffine(img,M,(COLS,ROWS))
+		steering = steering + (steering_shift * shift_dist)
 
 		if np.random.random() > 0.5:
 
@@ -191,8 +200,8 @@ if __name__ == "__main__":
 	parser.add_argument('--rate', type=float, default=0.001, help='Learning rate.')
 	parser.add_argument('--batch', type=int, default=128, help='Batch size.')
 	parser.add_argument('--epoch', type=int, default=10, help='Number of epochs.')
-	# parser.add_argument('--ltwo', type=float, default=0.01, help='L2 regularization rate.')
 	parser.add_argument('--epochsize', type=int, default=20000, help='How many frames per epoch.')
+	# parser.add_argument('--epochsize', type=int, default=40000, help='How many frames per epoch.')
 	parser.add_argument('--validsize', type=int, default=3000, help='How many validation samples.')
 	args = parser.parse_args()
 

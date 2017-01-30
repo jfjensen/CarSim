@@ -88,13 +88,19 @@ def get_augmented(features, labels, idxs):
 		elif img_choice == 2:
 			steering = steering - steering_angle
 			
-		max_shift = 50
+		max_shift = 100#50
 		shift_dist = 0.004
 
 		steering_shift = (np.random.uniform()*max_shift) - (max_shift/2)
 		M = np.float32([[1,0,steering_shift],[0,1,0]])
 		img = cv2.warpAffine(img,M,(COLS,ROWS))
 		steering = steering + (steering_shift * shift_dist)
+
+		brightness_correction = 0.2
+
+		hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+		hsv[:,:,2] = hsv[:,:,2] * (brightness_correction + np.random.uniform())
+		img = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
 		if np.random.random() > 0.5:
 
@@ -201,7 +207,7 @@ if __name__ == "__main__":
 	parser.add_argument('--batch', type=int, default=128, help='Batch size.')
 	parser.add_argument('--epoch', type=int, default=10, help='Number of epochs.')
 	parser.add_argument('--epochsize', type=int, default=20000, help='How many frames per epoch.')
-	# parser.add_argument('--epochsize', type=int, default=40000, help='How many frames per epoch.')
+	# parser.add_argument('--epochsize', type=int, default=30000, help='How many frames per epoch.')
 	parser.add_argument('--validsize', type=int, default=3000, help='How many validation samples.')
 	args = parser.parse_args()
 

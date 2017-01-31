@@ -88,10 +88,11 @@ def get_augmented(features, labels, idxs):
 		elif img_choice == 2:
 			steering = steering - steering_angle
 			
-		max_shift = 100#50
+		max_shift = 100
 		shift_dist = 0.004
 
-		steering_shift = (np.random.uniform()*max_shift) - (max_shift/2)
+		# steering_shift = (np.random.uniform()*max_shift) - (max_shift/2)
+		steering_shift = (np.random.normal(0.0,0.25)*max_shift)
 		M = np.float32([[1,0,steering_shift],[0,1,0]])
 		img = cv2.warpAffine(img,M,(COLS,ROWS))
 		steering = steering + (steering_shift * shift_dist)
@@ -149,12 +150,13 @@ def get_model(time_len=1, learning_rate=0.001):
 	model.add(Flatten())
 	model.add(Dropout(.2))
 	model.add(ELU())
-	model.add(Dense(1024, activation='tanh'))#, W_regularizer=l2(0.001)))
+	model.add(Dense(1024))#, activation='tanh'))#, W_regularizer=l2(0.0005)))
 	model.add(Dropout(.5))
 	model.add(ELU())
-	model.add(Dense(512, activation='tanh'))#, W_regularizer=l2(0.001)))
+	model.add(Dense(512))#, activation='tanh'))#, W_regularizer=l2(0.0005)))
+	model.add(BatchNormalization())
 	model.add(Dropout(.5))
-	# model.add(ELU())
+	model.add(ELU())
 	# model.add(Dense(128, activation='tanh'))#, W_regularizer=l2(0.001)))
 	# model.add(Dropout(.2))
 	# model.add(ELU())
@@ -205,7 +207,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Steering angle model trainer')
 	parser.add_argument('--rate', type=float, default=0.001, help='Learning rate.')
 	parser.add_argument('--batch', type=int, default=128, help='Batch size.')
-	parser.add_argument('--epoch', type=int, default=10, help='Number of epochs.')
+	parser.add_argument('--epoch', type=int, default=5, help='Number of epochs.')
 	parser.add_argument('--epochsize', type=int, default=20000, help='How many frames per epoch.')
 	# parser.add_argument('--epochsize', type=int, default=30000, help='How many frames per epoch.')
 	parser.add_argument('--validsize', type=int, default=3000, help='How many validation samples.')

@@ -26,11 +26,12 @@ sio = socketio.Server()
 app = Flask(__name__)
 model = None
 prev_image_array = None
+current_steering_angle = 0.0
 
 @sio.on('telemetry')
 def telemetry(sid, data):
     # The current steering angle of the car
-    steering_angle = data["steering_angle"]
+    current_steering_angle = data["steering_angle"]
     # The current throttle of the car
     throttle = data["throttle"]
     # The current speed of the car
@@ -47,6 +48,7 @@ def telemetry(sid, data):
     transformed_image_array = image_array[None, :, :, :]
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
+
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
     throttle = 0.3 #0.2
     print(steering_angle, throttle)

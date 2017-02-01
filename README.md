@@ -41,7 +41,7 @@ The top image shows the original camera image, whereas the bottom image shows th
 
 ### Using all 3 cameras
 
-When I started out, I just used the images from the center camera but my car often had the tendency to drive off the road. So, given that we have 3 camera images to choose from per data sample, we might as well make use of them. 
+When I started out, I just used the images from the center camera but my car often had the tendency to drive off the road. So, given that there are 3 camera images to choose from per data sample, we might as well make use of them. 
 
 The top image shows a (pre-processed) image from the center camera. The middle image is from the left camera and the bottom image is from the right camera.
 
@@ -51,15 +51,15 @@ The top image shows a (pre-processed) image from the center camera. The middle i
 
 ![Right camera](images/camera_right.png)
 
-So now, we choose the center/left/right camera image at random per data sample. In order to compensate for the shift to the left or right when using those cameras we need to adjust the steering angle accordingly. A value of 0.25 is added or subtracted to/from the steering angle given in the data sample respectively.
+So now, the center/left/right camera image is chosen at random per data sample. In order to compensate for the shift to the left or right when using those cameras the steering angle is adjusted accordingly. A value of 0.25 is added or subtracted to/from the steering angle given in the data sample respectively.
 
 This already improved keeping the car on the road, but it was not sufficient for the really sharp turns. I tried changing the value added/subtracted to/from the steering angle but this did not help.
 
 ### Shifting camera images left or right
 
-In order to keep the car on the road in the sharp turns we need to shift the camera image left or right. We do this according to a normal distribution. When the image is shifted, the steering angle is also adjusted to reflect the shift.
+In order to keep the car on the road in the sharp turns the camera image needs to be shifted left or right. This is done according to a normal distribution. When the image is shifted, the steering angle is also adjusted to reflect the shift.
 
-In order to reduce the amount of zig-zag by the car in autonomous mode, we only introduce the shift when the steering angle is above 0.01. By doing this we introduce a bias towards driving straight. i.e. When the car is driving straight in the training data, we don't shift the image.
+In order to reduce the amount of zig-zag by the car in autonomous mode, the shift is only introduced when the steering angle is above 0.01. By doing this a bias is introduced towards driving straight. i.e. When the car is driving straight in the training data, the image is not shifted.
 
 In the images below, we can see the original on top. The middle image is shifted left and the bottom image is shifted right.
 

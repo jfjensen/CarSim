@@ -15,6 +15,8 @@ The images are cropped in order to remove irrelevant elements such as:
 
 In this fashion, the neural network will be fed exactly the part of the camera image which shows the position of the car with respect to the edges of the road and also its heading.
 
+The top image shows a raw camera image from the center camera of the car. The bottom image shows the cropped version with only the relevant part of the road.
+
 ![Original camera image](images/non-cropped_camera_image.png)
 
 ![Cropped camera image](images/cropped_camera_image.png)
@@ -29,7 +31,9 @@ After the training and validation data is pre-processed, it is sent to the *get_
 
 ### Flipping the camera images left/right
 
-This is the most basic and obvious way to augment the data. The camera image is flipped left/right in order to remove the bias towards left turns.
+This is the most basic and obvious way to augment the data. The camera image is flipped left/right in order to remove the bias towards left turns. The steering angle is adjusted by changing the sign.
+
+The top image shows the original camera image, whereas the bottom image shows the flipped image.
 
 ![Original camera image](images/flipped_original.png)
 
@@ -39,19 +43,25 @@ This is the most basic and obvious way to augment the data. The camera image is 
 
 When I started out, I just used the images from the center camera but my car often had the tendency to drive off the road. So, given that we have 3 camera images to choose from per data sample, we might as well make use of them. 
 
+The top image shows a (pre-processed) image from the center camera. The middle image is from the left camera and the bottom image is from the right camera.
+
 ![Center camera](images/camera_center.png)
 
 ![Left camera](images/camera_left.png)
 
 ![Right camera](images/camera_right.png)
 
-So now, we choose the center/left/right camera image at random per data sample. In order to compensate for the shift to the left or right when using those cameras we need to adjust the steering angle accordingly. A value of 0.25 is added or subtracted to/from the steering angle given in the data sample.
+So now, we choose the center/left/right camera image at random per data sample. In order to compensate for the shift to the left or right when using those cameras we need to adjust the steering angle accordingly. A value of 0.25 is added or subtracted to/from the steering angle given in the data sample respectively.
 
 This already improved keeping the car on the road, but it was not sufficient for the really sharp turns. I tried changing the value added/subtracted to/from the steering angle but this did not help.
 
 ### Shifting camera images left or right
 
-In order to keep the car on the road in the sharp turns we need to shift the camera image left or right. We do this according to a normal distribution. The mean
+In order to keep the car on the road in the sharp turns we need to shift the camera image left or right. We do this according to a normal distribution. When the image is shifted, the steering angle is also adjusted to reflect the shift.
+
+In order to reduce the amount of zig-zag by the car in autonomous mode, we only introduce the shift when the steering angle is above 0.01. By doing this we introduce a bias towards driving straight. i.e. When the car is driving straight in the training data, we don't shift the image.
+
+In the images below, we can see the original on top. The middle image is shifted left and the bottom image is shifted right.
 
 ![Original camera image](images/shifted_original.png)
 
@@ -63,7 +73,9 @@ This augmentation is also useful for running the car on track 2 where there are 
 
 ### Randomizing the brightness
 
-This is not needed to keep the car on Track 1. Yet, for Track 2 it is necessary. On this track there are many shadows where obviously the brightness is less than on the sunny parts. creating random brightness changes (needed for track 2)
+This is not needed to keep the car on Track 1. Yet, for Track 2 it is necessary. On this track there are many shadows where obviously the brightness is less than on the sunny parts. 
+
+In the images below, we can see the original on top. The bottom two have random brightness changes.
 
 ![Brightness unchanged](images/brightness_original.png)
 
@@ -79,26 +91,26 @@ The neural network architecture chosen was inspired by the convolutional neural 
 
 ### Structure of the network
 
-1. Normalization of inputs (between values -1.0 and 1.0)
-2. Convolutional layer consisting of an 8x8 convolution with 16 output filters and a stride of 4x4
-3. ELU activation function
-4. Max Pooling layer
-5. Convolutional layer consisting of an 5x5 convolution with 32 output filters and a stride of 2x2
-6. ELU activation function
-7. Convolutional layer consisting of an 5x5 convolution with 64 output filters and a stride of 2x2
-8. Flatten layer
-9. Dropout layer with dropout probability of 0.2
-10. ELU activation function
-11. Dense layer with 1024 neurons
-12. Dropout layer with dropout probability of 0.5
-13. ELU activation function
-14. Dense layer with 512 neurons
-15. Batch normalization layer
-16. Dropout layer with dropout probability of 0.5
-17. ELU activation function
-18. Dense layer with 1 neuron and Tanh activation function
+1. *Normalization of inputs (between values -1.0 and 1.0)*
+2. *Convolutional layer consisting of an 8x8 convolution with 16 output filters and a stride of 4x4*
+3. *ELU activation function*
+4. *Max Pooling layer*
+5. *Convolutional layer consisting of an 5x5 convolution with 32 output filters and a stride of 2x2*
+6. *ELU activation function*
+7. *Convolutional layer consisting of an 5x5 convolution with 64 output filters and a stride of 2x2*
+8. *Flatten layer*
+9. *Dropout layer with dropout probability of 0.2*
+10. *ELU activation function*
+11. *Dense layer with 1024 neurons*
+12. *Dropout layer with dropout probability of 0.5*
+13. *ELU activation function*
+14. *Dense layer with 512 neurons*
+15. *Batch normalization layer*
+16. *Dropout layer with dropout probability of 0.5*
+17. *ELU activation function*
+18. *Dense layer with 1 neuron and Tanh activation function*
 
-##### Experimentation
+### Experimentation
 
 This structure was the result of trial and error starting off with the CNN by Comma.ai . Some of the (other) things I tried was:
 

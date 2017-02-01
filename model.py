@@ -20,8 +20,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from scipy.misc import imread, imresize
 
-# read in the images
-
 # global variables for size of camera image to feed to neural network
 ROWS, COLS = 80, 320
 

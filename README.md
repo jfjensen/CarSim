@@ -1,65 +1,83 @@
 # Behavioral Cloning Project
 
-### Data
+## Data
 
 The data supplied by Udacity was used. From discussions on the Slack channel and the forum, I gathered that the use of a joystick was necessary to generate smooth steering data. Since I do not possess a joystick, I therefore chose to use the data from Udacity.
 
-### Pre-processing The Data
+## Pre-processing The Data
 
-The camera images are all cropped before they are fed to the neural network. Not just the images from the training and validation data are cropped by also those used when actually running the car in autonomous mode. The drive.py file will access the function in model.py for this purpose.
+The camera images are all cropped before they are fed to the neural network. Not just the images from the training and validation data are cropped by also those used when actually running the car in autonomous mode. The *drive.py* file will access the function in *model.py* for this purpose.
 
 The images are cropped in order to remove irrelevant elements such as:
 
-- The top of the image which contains the sky, trees, mountain tops, ... .
+- The top of the image which contains the sky, trees, mountain tops, and so on.
 - The bottom of the image which contains the hood of the car.
 
 In this fashion, the neural network will be fed exactly the part of the camera image which shows the position of the car with respect to the edges of the road and also its heading.
 
-[cropped image ], [non-cropped image]
+![Original camera image](images/non-cropped_camera_image.png)
+
+![Cropped camera image](images/cropped_camera_image.png)
 
 The specific values at which to crop the image where suggested by various people on Slack. I tried to change them to see if that yielded a better cropping, but came to the conclusion that the suggested values were indeed optimal.
 
-### Data Augmentation
+## Data Augmentation
 
 Before experimenting with data augmentation, I decided to look at other people's work for inspiration. Mostly I looked at the work by Vivek Yadav, Subodh Malgonde and the NVIDIA team. The Slack channel and the ND forum were also of help.
 
-After the training and validation data is pre-processed, it is sent to the get_augmented function. Here 4 things happen.
+After the training and validation data is pre-processed, it is sent to the *get_augmented* function. Here 4 things happen.
 
-##### Flipping the camera images left/right
+### Flipping the camera images left/right
 
 This is the most basic and obvious way to augment the data. The camera image is flipped left/right in order to remove the bias towards left turns.
 
-[ image ],[image flipped]
+![Original camera image](images/flipped_original.png)
 
-##### Using all 3 cameras
+![Flipped camera image](images/flipped_flip.png)
+
+### Using all 3 cameras
 
 When I started out, I just used the images from the center camera but my car often had the tendency to drive off the road. So, given that we have 3 camera images to choose from per data sample, we might as well make use of them. 
 
-[3 images from same data sample]
+![Center camera](images/camera_center.png)
+
+![Left camera](images/camera_left.png)
+
+![Right camera](images/camera_right.png)
 
 So now, we choose the center/left/right camera image at random per data sample. In order to compensate for the shift to the left or right when using those cameras we need to adjust the steering angle accordingly. A value of 0.25 is added or subtracted to/from the steering angle given in the data sample.
 
 This already improved keeping the car on the road, but it was not sufficient for the really sharp turns. I tried changing the value added/subtracted to/from the steering angle but this did not help.
 
-##### Shifting camera images left or right
+### Shifting camera images left or right
 
 In order to keep the car on the road in the sharp turns we need to shift the camera image left or right. We do this according to a normal distribution. The mean
 
-[a couple of images shifted]
+![Original camera image](images/shifted_original.png)
+
+![Camera image shifted to the left](images/shifted_left.png)
+
+![Camera image shifted to the right](images/shifted_right.png)
 
 This augmentation is also useful for running the car on track 2 where there are many sharp turns.
 
-##### Randomizing the brightness
+### Randomizing the brightness
 
 This is not needed to keep the car on Track 1. Yet, for Track 2 it is necessary. On this track there are many shadows where obviously the brightness is less than on the sunny parts. creating random brightness changes (needed for track 2)
 
-[images of different brightness]
+![Brightness unchanged](images/brightness_original.png)
 
-### Convolutional Neural Network
+![Brightness changed example 1](images/brightness_changed_2.png)
+
+![Brightness changed example 2](images/brightness_changed.png)
+
+
+
+## Convolutional Neural Network
 
 The neural network architecture chosen was inspired by the convolutional neural network (CNN) used by Comma.ai . Given that it had been used for a similar behavioral cloning project, I found it logical to use it as a starting point. My resulting CNN is thus a variation of the one used by Comma.ai .
 
-##### Structure of the network
+### Structure of the network
 
 1. Normalization of inputs (between values -1.0 and 1.0)
 2. Convolutional layer consisting of an 8x8 convolution with 16 output filters and a stride of 4x4
@@ -93,13 +111,13 @@ This structure was the result of trial and error starting off with the CNN by Co
 
 Adding more layers seemed to lead to overfitting.
 
-### Training
+## Training
 
-##### Adam Optimizer
+### Adam Optimizer
 
 The training was done using an Adam optimizer. I tried changing the learning rate, but decided that it was best to leave it as is.
 
-##### Fit generator
+### Fit generator
 
 The Keras fit_generator function was set with the following parameters:
 
@@ -110,21 +128,21 @@ The Keras fit_generator function was set with the following parameters:
 
 These values were found after a large amount of trial and error experimentation.
 
-### Results
+## Results
 
 The car can drive on both tracks and stay within the bounds of the road. Here I supply two links to Youtube to show that this is indeed the case.
 
-##### Track 1
+### Track 1
 
-[youtube link]
+[![Track 1 on Youtube](images/track_1.png)](https://youtu.be/wwt1KzNfyYI)
 
-##### Track 2
+### Track 2
 
-[youtube link]
+[![Track 2 on Youtube](images/track_2.png)](https://youtu.be/BFDHvI1oS94)
 
 
 
-### References
+## References
 
 Comma.ai - https://github.com/commaai/research/blob/master/train_steering_model.py
 
@@ -137,3 +155,4 @@ NVIDIA team - https://images.nvidia.com/content/tegra/automotive/images/2016/sol
 Car ND Slack channel - https://carnd.slack.com/
 
 Car ND Forum - https://carnd-forums.udacity.com/
+

@@ -78,13 +78,14 @@ def get_augmented(features, labels, idxs):
 		elif img_choice == 2:
 			steering = steering - steering_angle
 
-		# shift the camera image left or right according to normal distribution			
-		max_shift = 100
-		shift_dist = 0.004
-		steering_shift = (np.random.normal(0.0,0.25)*max_shift)
-		M = np.float32([[1,0,steering_shift],[0,1,0]])
-		img = cv2.warpAffine(img,M,(COLS,ROWS))
-		steering = steering + (steering_shift * shift_dist)
+		if abs(steering) > 0.01:
+			# shift the camera image left or right according to normal distribution			
+			max_shift = 100
+			shift_dist = 0.004
+			steering_shift = (np.random.normal(0.0,0.25)*max_shift)
+			M = np.float32([[1,0,steering_shift],[0,1,0]])
+			img = cv2.warpAffine(img,M,(COLS,ROWS))
+			steering = steering + (steering_shift * shift_dist)
 
 		# creating random brightness changes (needed for track 2)
 		brightness_correction = 0.2

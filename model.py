@@ -15,7 +15,6 @@ from keras.optimizers import Adam
 from keras.regularizers import l2, activity_l2
 from keras.layers.pooling import MaxPooling2D, AveragePooling2D
 from keras.layers.normalization import BatchNormalization
-# from keras.utils.visualize_util import plot
 
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -23,26 +22,30 @@ from scipy.misc import imread, imresize
 
 # read in the images
 
-data_path = "./simulator-windows-64/data/driving_log.csv"
-with open(data_path, 'r') as data_file:
-	reader = csv.reader(data_file)
-	data = np.array([row for row in reader])
-print(data.shape)
-data = data[1:]
-
-img_data_col = 0
-steering_data_col = 3
-
-data_features, data_labels = np.reshape(data[:,0:3],(len(data),-1)), np.reshape(data[:,steering_data_col], (len(data),-1))
-print(data_features.shape)
-print(data_labels.shape)
-
-data_features, data_labels = shuffle(data_features, data_labels)
-
-train_features, valid_features, train_labels, valid_labels = train_test_split(data_features, data_labels, test_size=0.2, random_state=42)
-
 # global variables for size of camera image to feed to neural network
 ROWS, COLS = 80, 320
+
+# the path for the csv file
+DATA_PATH = "./simulator-windows-64/data/driving_log.csv"
+
+# loading the data from the csv file
+def load_data():
+	with open(DATA_PATH, 'r') as data_file:
+		reader = csv.reader(data_file)
+		data = np.array([row for row in reader])
+	print(data.shape)
+	data = data[1:]
+
+	img_data_col = 0
+	steering_data_col = 3
+
+	data_features, data_labels = np.reshape(data[:,0:3],(len(data),-1)), np.reshape(data[:,steering_data_col], (len(data),-1))
+	print(data_features.shape)
+	print(data_labels.shape)
+
+	data_features, data_labels = shuffle(data_features, data_labels)
+
+	return data_features, data_labels
 
 def preprocess(img):
 	# crop the camera image to remove what's above the road and also remove the hood of the car
@@ -78,6 +81,7 @@ def get_augmented(features, labels, idxs):
 		elif img_choice == 2:
 			steering = steering - steering_angle
 
+		# only shift when steering angle is above 0.01
 		if abs(steering) > 0.01:
 			# shift the camera image left or right according to normal distribution			
 			max_shift = 100
@@ -161,7 +165,16 @@ if __name__ == "__main__":
 	parser.add_argument('--validsize', type=int, default=3000, help='How many validation samples.')
 	args = parser.parse_args()
 
+	# load the data from the csv file
+	data_features, data_labels = load_data()
+
+	# split the data set into training and validation sets
+	train_features, valid_features, train_labels, valid_labels = train_test_split(data_features, data_labels, test_size=0.2, random_state=42)
+
+	# shuffle - why not?
 	train_features, train_labels = shuffle(train_features, train_labels)
+	
+	# calculate the actual samples per epoch as a multiple of the batch size (to avoid keras warning message)
 	samples_per_epoch = (args.epochsize//args.batch)*args.batch
 
 	# fetch the model of the convolutional neural network

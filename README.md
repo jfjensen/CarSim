@@ -2,7 +2,11 @@
 
 ## Data
 
-The data supplied by Udacity was used. From discussions on the Slack channel and the forum, I gathered that the use of a joystick was necessary to generate smooth steering data. Since I do not possess a joystick, I therefore chose to use the data from Udacity.
+The data supplied by Udacity was used. This data was downloaded from the Project Resources page in the Card ND on-line classroom.
+
+From discussions on the Slack channel and the forum, I gathered that the use of a joystick was necessary to generate smooth steering data. Since I do not possess a joystick, I therefore chose to use the data from Udacity.
+
+No extra data was created to supplement the Udacity data. Some people have suggested creating additional recovery data. This is data which is intended to show the car what to do in situations where it is likely to drive off the road. In my view this is not necessary when using the data augmentation which I describe in this rapport. The fact that my car is able to drive around both tracks without this kind of data, proves the point. 
 
 ## Pre-processing The Data
 
@@ -59,7 +63,7 @@ This already improved keeping the car on the road, but it was not sufficient for
 
 In order to keep the car on the road in the sharp turns the camera image needs to be shifted left or right. This is done according to a normal distribution. When the image is shifted, the steering angle is also adjusted to reflect the shift.
 
-In order to reduce the amount of zig-zag by the car in autonomous mode, the shift is only introduced when the steering angle is above 0.01. By doing this a bias is introduced towards driving straight. i.e. When the car is driving straight in the training data, the image is not shifted.
+In order to reduce the amount of zig-zag by the car in autonomous mode, the shift is only introduced when the steering angle is above 0.01. By doing this the bias is still maintained towards driving straight. i.e. When the car is driving straight in the training data, the image is not shifted. 
 
 In the images below, we can see the original on top. The middle image is shifted left and the bottom image is shifted right.
 
@@ -83,7 +87,21 @@ In the images below, we can see the original on top. The bottom two have random 
 
 ![Brightness changed example 2](images/brightness_changed.png)
 
+## Characteristics of the dataset
 
+When using only the original data supplied by Udacity, the car drives off to the sides and over the edges of the road. When looking at the frequency distribution of the Udacity data we can see why this is the case. Below is a histogram showing the distribution of 1000 random samples.
+
+![Frequency distribution of Udacity data](images/orig1000samples.png)
+
+There are very few steering angles larger or smaller than 0.0. The result is that the car cannot recover and steer left/right when needed. By augmenting the data, as mentioned above, including using all 3 cameras and shifting the images left/right, it is possible to increase the amount of left/right steering angles.
+
+![Probability distribution after augmentation](images/1000samples.png)
+
+In the above histogram, which is based on 1000 random samples of the augmented data we can again see the  frequency distribution of the steering angles. The augmentation still creates a strong bias towards driving straight. Yet, at the same time much more data for driving left/right is now available. This is sufficient for keeping the car on the road.
+
+While experimenting I discovered that it is important to maintain the large bias for driving straight. If this is diminished too much and the biases toward left/right steering are increased further, then the car will show a high(er) level of zigzag driving.
+
+In addition, we can see in the histogram that the distribution is symmetric around 0.0. Thus, having no particular bias for turning left or right. Around 0.25 and -0.25 there is a higher frequency. This is due to the fact that use the left and right shifted images.
 
 ## Convolutional Neural Network
 
@@ -110,6 +128,10 @@ The neural network architecture chosen was inspired by the convolutional neural 
 17. *ELU activation function*
 18. *Dense layer with 1 neuron and Tanh activation function*
 
+### Graphical representation of the network
+
+![CNN](images/CNN_model.png)
+
 ### Experimentation
 
 This structure was the result of trial and error starting off with the CNN by Comma.ai . Some of the (other) things I tried was:
@@ -127,7 +149,7 @@ Adding more layers seemed to lead to overfitting.
 
 ### Adam Optimizer
 
-The training was done using an Adam optimizer. I tried changing the learning rate, but decided that it was best to leave it as is.
+The training of the CNN was done using an Adam optimizer. I tried changing the learning rate, but decided that it was best to leave it as is.
 
 ### Fit generator
 
@@ -139,6 +161,12 @@ The Keras fit_generator function was set with the following parameters:
 - number of epochs: 5
 
 These values were found after a large amount of trial and error experimentation.
+
+The CNN was first trained using training data. Validation data was also used to get an impression of the extent of overfitting or generalization done. Then, when the overfitting was largely eliminated I would test the car on Track 1 in autonomous mode. 
+
+In the beginning the car would wander off to the side and crash outside the track. By experimenting with the various steering augmentations (as mentioned above) this problem was eventually resolved.
+
+It was then quite amazing to also see the car drive on Track 2. The only addition needed to make the car drive on Track 2 was the brightness adjustments in the data (as mentioned above). No tweaking of the steering was necessary.
 
 ## Results
 
@@ -155,6 +183,8 @@ The car can drive on both tracks and stay within the bounds of the road. Here I 
 
 
 ## References
+
+Udacity data - https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zip
 
 Comma.ai - https://github.com/commaai/research/blob/master/train_steering_model.py
 
